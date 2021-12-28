@@ -2,6 +2,7 @@ import './App.css';
 import React, { Component } from 'react';
 import Customer from './components/Customer';
 import { Paper, Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core/';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { withStyles } from '@material-ui/core/styles';
 
 const styles = () => ({
@@ -11,8 +12,11 @@ const styles = () => ({
   },
   table: {
     minWidth: 1080
+  },
+  progress: {
+    
   }
-})
+});
 
 class App extends Component {
 
@@ -20,11 +24,13 @@ class App extends Component {
     super(props);
 
     this.state = {
-      customers: ""
+      customers: "",
+      completed: 0
     }
   }
 
   componentDidMount() {
+    this.timer = setInterval(this.progress, 80);
     this.callApi()
       .then(res => this.setState({ customers: res }))
       .catch(err => console.log(err));
@@ -34,6 +40,11 @@ class App extends Component {
     const response = await fetch('/api/customers');
     const body = await response.json();
     return body;
+  }
+
+  progress = () => {
+    const { completed } = this.state;
+    this.setState({ completed: completed >= 100 ? 0 : completed + 1 });
   }
 
   render() {
@@ -65,7 +76,13 @@ class App extends Component {
                 >
                 </Customer>
               )
-            }) : "" }
+            }) : 
+              <TableRow>
+                <TableCell colspan="6" align="center">
+                  <CircularProgress className={classes.progress} variant="determinate" value={this.state.completed}></CircularProgress>
+                </TableCell>
+              </TableRow>
+            }
           </TableBody>
         </Table>
       </Paper>
