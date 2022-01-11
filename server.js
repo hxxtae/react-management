@@ -23,8 +23,14 @@ const connection = mysql.createConnection({
   password: conf.password,
   port: conf.post,
   database: conf.database
-})
+});
 connection.connect();
+
+const multer = require('multer'); // 사용자가 업로드한 파일의 이름은 multer 라이브러리에 의해서 중복되지 않는 형태로 자동으로 바뀌어서 올라간다.
+// -> 실제로 이런 이미지 업로드 기능은 AWS의 S3와 같은 서비스를 이용해서 저장을 하게 되면 매우 효과적이다.
+const upload = multer({ dest: './upload' }); // 목적지 : ./upload
+// upload 라는 이름의 폴더를 사용자가 실제로 접근해서 프로필 이미지를 확인할 수 있도록 하기 위해서
+// express.static 을 이용해 ./upload 폴더를 공유할 수 있도록 한다.
 
 app.get('/api/customers', (req, res) => {
   connection.query(
@@ -34,6 +40,29 @@ app.get('/api/customers', (req, res) => {
     }
   )
 });
+
+app.use('/image', express.static('./upload'));
+// image 폴더에서 upload 폴더에 접근할 수 있도록 한다.
+// 즉 사용자 입장에서는 image 라는 이름의 경로로 접근을 하는데, 우리의 실제 서버의 /upload 폴더와
+// 맵핑이 된다는 의미다.
+
+app.post('/api/customers', upload.single('image'), (req, res) => {
+  let sql = 'INSERT INTO CUSTOMER VALUES (null, ?, ?, ?, ?, ?)';
+  let image = '/image/' + req.file.filename;
+  let name = req.body.name;
+  let birthday = req.body.birthday;
+  let gender = req.body.gender;
+  let job = req.body.job;
+  let params = [image, name, birthday, gender, job];
+  connection.query(sql, params,
+    (err, rows, fields) => {
+      res.send(rows);
+      console.log(err);
+      console.log(rows);
+    }
+  );
+});
+
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
