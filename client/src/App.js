@@ -85,6 +85,7 @@ class App extends Component {
                     birthday={item.birthday}
                     gender={item.gender}
                     job={item.job}
+                    stateRefresh={this.stateRefresh}
                   >
                   </Customer>
                 )
