@@ -34,7 +34,7 @@ const upload = multer({ dest: './upload' }); // 목적지 : ./upload
 
 app.get('/api/customers', (req, res) => {
   connection.query(
-    "SELECT * FROM CUSTOMER",
+    "SELECT * FROM CUSTOMER WHERE isDeleted = 0",
     (err, rows, fields) => {
       res.send(rows);
     }
@@ -47,9 +47,9 @@ app.use('/image', express.static('./upload'));
 // 맵핑이 된다는 의미다.
 
 app.post('/api/customers', upload.single('image'), (req, res) => {
-  let sql = 'INSERT INTO CUSTOMER VALUES (null, ?, ?, ?, ?, ?)';
+  let sql = 'INSERT INTO CUSTOMER VALUES (null, ?, ?, ?, ?, ?, now(), 0)';
   let image = '/image/' + req.file.filename;
-  let name = req.body.name;
+  let name = req.body.name; // body ★★★
   let birthday = req.body.birthday;
   let gender = req.body.gender;
   let job = req.body.job;
@@ -62,6 +62,16 @@ app.post('/api/customers', upload.single('image'), (req, res) => {
     }
   );
 });
+
+app.delete('/api/customers/:id', (req, res) => {
+  let sql = 'UPDATE CUSTOMER SET isDeleted = 1 WHERE id = ?';
+  let params = [req.params.id]; // params ★★★
+  connection.query(sql, params,
+    (err, rows, fields) => {
+      res.send(rows);
+    });
+  }
+);
 
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
