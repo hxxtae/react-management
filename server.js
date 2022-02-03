@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // url 형식의 데이터 �
 /* -------------------------------------
  * mysql connection
  * ------------------------------------- */
-const data = fs.readFileSync('./database.json');
+const data = fs.readFileSync('/'); // ./database.json
 const conf = JSON.parse(data);
 const mysql = require('mysql');
 
